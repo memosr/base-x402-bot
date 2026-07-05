@@ -1,0 +1,27 @@
+{
+  "name": "base-x402-bot",
+  "version": "1.0.0",
+  "description": "Telegram bot that pays live x402 APIs on Base mainnet: gas price alerts + daily builder leaderboard.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "x402",
+    "base",
+    "telegram",
+    "gas",
+    "micropayments"
+  ],
+  "author": "memosr",
+  "license": "MIT",
+  "dependencies": {
+    "@x402/evm": "^2.16.0",
+    "@x402/extensions": "^2.16.0",
+    "@x402/fetch": "^2.16.0",
+    "dotenv": "^17.4.2",
+    "node-cron": "^4.2.1",
+    "viem": "^2.53.1"
+  }
+}
