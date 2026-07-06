@@ -1,7 +1,11 @@
 import "dotenv/config";
 import { createPaidFetch } from "./src/x402.js";
 import { sendTelegramMessage } from "./src/telegram.js";
-import { runGasCheck, startGasAlertJob } from "./src/gasAlert.js";
+import {
+  runGasCheck,
+  sendGasSummary,
+  startGasAlertJob,
+} from "./src/gasAlert.js";
 import { runLeaderboard, startLeaderboardJob } from "./src/leaderboard.js";
 
 function requireEnv(names) {
@@ -25,19 +29,30 @@ async function main() {
   // Only the public address is logged — never the private key.
   console.log(`  payer: ${payerAddress}`);
 
-  // RUN_ONCE=1: manual test mode — run both paid checks immediately,
-  // log the results, and exit instead of starting the cron schedules.
+  // RUN_ONCE=1: manual test mode — run one paid gas check, send the daily
+  // gas summary once, run the leaderboard once, then exit (no cron).
   if (process.env.RUN_ONCE === "1") {
-    console.log("[run-once] cron atlandi; her iki kontrol bir kez calisiyor");
+    console.log(
+      "[run-once] cron atlandi; gas check + gunluk ozet + leaderboard bir kez calisiyor",
+    );
     let failed = false;
 
     try {
-      const isBelowThreshold = await runGasCheck(fetchWithPayment);
-      console.log(`[run-once] gas check OK (below threshold: ${isBelowThreshold})`);
+      const reading = await runGasCheck(fetchWithPayment);
+      console.log(`[run-once] gas check OK (baseFee: ${reading.baseFeeGwei} gwei)`);
     } catch (error) {
       failed = true;
       const message = error instanceof Error ? error.message : String(error);
       console.error(`[run-once] gas check FAILED: ${message}`);
+    }
+
+    try {
+      const sent = await sendGasSummary();
+      console.log(`[run-once] gas summary ${sent ? "OK" : "SKIPPED (no data)"}`);
+    } catch (error) {
+      failed = true;
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`[run-once] gas summary FAILED: ${message}`);
     }
 
     try {
@@ -55,7 +70,7 @@ async function main() {
 
   await sendTelegramMessage(
     `🤖 base-x402-bot basladi (payer: ${payerAddress})\n` +
-      "Gas alert: 15 dk'da bir · Leaderboard: gunde 1 kez",
+      "Gas check: 15 dk'da bir (log-only) · Gas ozeti: gunde 1 kez · Leaderboard: gunde 1 kez",
   );
   console.log("[startup] Telegram'a baslangic mesaji gonderildi");
 
