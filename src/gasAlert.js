@@ -6,7 +6,7 @@ const GAS_API_URL =
   "https://base-gas-x402-production.up.railway.app/gas";
 
 const DEFAULT_THRESHOLD_GWEI = 0.01;
-const CRON_GAS = process.env.CRON_GAS || "*/15 * * * *"; // every 15 minutes
+const CRON_GAS = process.env.CRON_GAS || "0 * * * *"; // hourly
 const CRON_GAS_SUMMARY = process.env.CRON_GAS_SUMMARY || "0 9 * * *"; // daily 09:00
 
 // Freshest reading from the 15-minute paid checks; the daily summary reads it.
@@ -87,7 +87,7 @@ export async function sendGasSummary() {
 
 /**
  * Starts both gas jobs:
- *  - CRON_GAS (default every 15 minutes): paid x402 gas check, log-only.
+ *  - CRON_GAS (default hourly): paid x402 gas check, log-only.
  *    Keeps traffic/attribution flowing and refreshes the latest reading.
  *  - CRON_GAS_SUMMARY (default daily at 09:00): one Telegram summary built
  *    from the latest reading.
